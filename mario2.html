@@ -1,0 +1,286 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>EaselJS - Mario</title>
+<script type="text/javascript" src="../lib/easeljs.min.js"></script>
+<script type="text/javascript" src="../lib/tweenjs.min.js"></script>
+<script type="text/javascript" src="../lib/jquery.js"></script>
+<script type="text/javascript" src="../lib/underscore.js"></script>
+<script type="text/javascript" src="../lib/backbone.js"></script>
+<script type="text/javascript" src="../lib/backbone.marionette.js"></script>
+<script type="text/javascript" src="../lib/simpleInheritance.js"></script>
+</head>
+
+<body>
+
+<canvas id="stage" width="400" height="200" style="margin:50px auto; outline:1px dashed #ccc"></canvas>
+<script type="text/javascript">
+var Game = (function() {
+	var Game = new Backbone.Marionette.Application();
+	
+	Game.vent = new Backbone.Marionette.EventAggregator();
+	
+	Game.images = {
+		mario_movements: "sprites/mario_movements.png",
+		mario: "sprites/supermariorpg_mario_sheet.png",
+		yoshi: "sprites/supermariorpg_yoshis_sheet.png"
+	};
+	
+	Game.entities = {};
+	
+	Game.loadImages = function(images, callback) {
+		var loaded = 0;
+		var length = _.keys(images).length;
+		var countLoads;
+
+		callback || (callback = function() {});
+		
+		countLoads = function() {
+			loaded++;
+			if(loaded == length) {
+				Game.vent.trigger("images:loaded", images);
+				callback();
+			}
+		}
+		
+		// overwrite image src's with Image objects
+		for(name in images) {
+			var src = images[name];
+			images[name] = new Image();
+			images[name].src = src;
+			images[name].onerror = function() { throw new Error("Unable to load image (src: " + src + ")"); };
+			images[name].onload = countLoads;
+		}
+	}
+	
+	Game.init = function() {
+		// Setup stage
+		Game.canvas = document.getElementById("stage");
+		Game.stage = new createjs.Stage(Game.canvas);
+
+		// setup ticker
+		if(Game.tick) { createjs.Ticker.addListener(Game.tick); }
+		createjs.useRAF = true;
+		createjs.setFPS = 60;
+		
+		// Create mario	entity
+		Game.mario = new Mario({ stage: Game.stage });
+		Game.addChild(Game.mario);
+
+		// testing movement
+		//Game.mario.moveTo(00, 500);
+	}
+	
+	Game.addChild = function(entity) {
+		if(!entity.animation) { throw new Error("Cannot add entity to stage: Entity is missing animation property"); }
+		Game.stage.addChild(entity.animation);
+		entity.animation.gotoAndPlay("right");
+		Game.stage.update();
+	}
+	
+	Game.loadAssets = function() {
+		Game.loadImages(Game.images);
+	}
+	
+	// Start the game when assets are load
+	Game.addInitializer(function() {
+		Game.loadAssets();
+		
+		// Initialize when assets are 
+		Game.bindTo(Game.vent, "images:loaded", Game.init, Game);
+	});
+	
+	return Game;
+})();
+
+var Entity = (function() {
+	// Named direction mapped to radian angle
+	var _degreeMap = {
+		// 0 is "right"
+		// PI is "left"
+		// In fractions of 2 (multiple my PI to get radians)
+		down				: [(15/8), (1/8)],
+		downRight		: [(1/8), (3/8)],
+		right				: [(3/8), (5/8)],
+		upRight			: [(5/8), (7/8)],
+		up					: [(7/8), (9/8)],
+		upLeft			: [(9/8), (11/8)],
+		left				: [(11/8), (13/8)],
+		downLeft		: [(13/8), (15/8)],
+		
+		/* In degrees
+		"up"				: [338, 22],
+		"upRight"		: [23, 67],
+		"right"			: [68, 112],
+		"downRight"	: [113, 157],
+		"down"			: [158, 202],
+		"downLeft" 	: [203, 247],
+		"left"			: [248, 292],
+		"upLeft"		: [293, 337]
+		*/
+	}
+	
+	var self = Class.extend({
+		
+		startingPosition: { x: 0, y: 0 },
+		
+		velocity: 1.5,			// pixels per second
+	
+		init: function(options) {
+			_.bindAll(this);
+			
+			this.options = options || {};
+			
+			// Set stage
+			this.stage = options.stage || this.stage;
+			if(!stage) { throw new Error("A stage must be defined on an entity object"); }
+			
+		
+			// Setup ticker
+			if(this.tick) { createjs.Ticker.addListener(this.tick) }
+			
+			// Create sprite
+			this.configureSprite();
+		},
+		
+		// Setup sprite, with movement animations
+		configureSprite: function() {
+			var animations = {};
+			
+			this.spriteOptions || (this.spriteOptions = this.options.spriteOptions);
+			this.movements || (this.movements = this.options.movements);
+			
+			// Require spriteOptions to be set
+			if(!this.spriteOptions) { throw new Error("spriteOptions must be set for an entity") };
+	
+			// Create animations for each movement
+			for(var i=0; i<this.movements.length; ++i) {
+				var name = this.movements[i].direction;
+				var frames = this.movements[i].frames;
+				var frequency = this.movements[i].frequency || this.spriteOptions.frequency;
+				
+				animations[name] = {
+					frames: frames,
+					next: name,
+					frequency: frequency
+				}
+			}
+
+			// Add movement animations to any other specified animations
+			this.spriteOptions.animations = _.extend({}, this.spriteOptions.animations, animations);
+			this.sprite = new createjs.SpriteSheet(this.spriteOptions);
+			this.animation = new createjs.BitmapAnimation(this.sprite);
+			
+			// Set starting position
+			_.extend(this.animation, this.startingPosition);
+			
+		},
+		
+		moveTo: function(toX, toY) {
+			var dx, dy, radians, slope;
+			var self = this;
+			
+			// Allow params as (x, y) or { x: ..., y: ... }
+			if(_.isObject(toX)) { toX = toX.x, toY = toX.y }
+			
+			// Get fraction of a circle (where 180deg = 1, 360 = 2(0))
+			var fractions = function(r) {
+				r = r/Math.PI
+				
+				// Return fraction of whole circle (instead of using JS's neg. radians
+				if(r < 0) { r = 2 + r	}
+				return r;
+			}
+			
+			// Find radian angle between points 
+			// (where up = 0, down = 1)
+			dx = toX - this.animation.x;
+			dy = toY - this.animation.y;
+			fraction = fractions(Math.atan2(dx,dy));				// Fraction of 2PI radians
+			
+			// Find direction matching radian angle
+			this.direction = null;
+			for(var name in _degreeMap) {
+				if(_degreeMap[name][0] < fraction && fraction <= _degreeMap[name][1]) {
+					this.direction = name;
+					break;
+				}
+			}
+				console.log(this.direction, fraction);
+			
+			// Assume that if !direction, is up
+			// Probably a better way, but...
+			if(this.direction === null) { this.direction = "down" }
+				
+			// Set sprite animation
+			this.animation.gotoAndPlay(this.direction);
+			
+			// Tween queue
+			this.queue = createjs.Tween.get(this.animation);
+			// Animate to location
+			this.queue.to({ x: toX, y: toY }, 1000, createjs.Ease.quadInOut).call(this.stop);
+		},
+		
+		// Stops the sprite animation, and shows "standing" frame
+		stop: function() {
+			var frames = this.sprite.getAnimation(this.direction).frames;
+			this.animation.gotoAndStop(frames[0]);
+		},
+		
+		tickAction: function() {
+		},
+		
+		setTickAction: function(fn) {
+			this.tickAction = fn;
+		},
+		
+		clearTickAction: function() {
+			this.tickAction = function() {}
+		},
+		
+		tick: function() {
+			this.tickAction.apply(arguments, this);
+			this.stage.update();
+		}
+	});
+
+	return self;
+})();
+
+var Mario = (function() {
+	var self = Entity.extend({
+		startingPosition: { x:0, y: 0 },
+		
+		movements: [
+			{ direction: "up", 				frames: [6, 14, 6, 16] },
+			{ direction: "upRight", 	frames: [32, 17, 32, 18] },
+			{ direction: "right",			frames: [7, 15, 7, 17] },
+			{ direction: "downRight", frames: [27, 29, 27, 21] },
+			{ direction: "down",			frames: [8, 10, 8, 11] },
+			{ direction: "downLeft", 	frames: [26, 28, 26, 20] },
+			{ direction: "left",			frames: [6, 14, 6, 16] },
+			{ direction: "upLeft", 		frames: [56, 34, 56, 35] }
+		],
+		
+		spriteOptions: {
+			images: [Game.images.mario],
+			frames: { width: 150, height: 150 },
+			frequency: 3
+		},
+		
+		tick: function() {
+			this._super();
+		}
+	});
+	
+	return self;
+})();
+</script>
+<script type="text/javascript">
+$(document).ready(function() {
+	Game.start();
+});
+</script>
+</body>
+</html>

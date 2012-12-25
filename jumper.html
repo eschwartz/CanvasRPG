@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Jumper - EaselJS</title>
+<script type="text/javascript" src="../lib/easeljs.min.js"></script>
+</head>
+
+<body>
+<script type="text/javascript">
+/* Set the stage
+ ================= */
+canvas = document.createElement('canvas');
+canvas.width = 500;
+canvas.height = 250;
+document.body.appendChild(canvas);
+
+// Create stage
+stage = new Stage(canvas);
+
+// Ticker
+Ticker.setFPS(30);
+Ticker.addListener(tick);
+function tick() {
+	stage.update();
+}
+</script>
+</body>
+</html>
