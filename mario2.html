@@ -14,8 +14,17 @@
 
 <body>
 
-<canvas id="stage" width="400" height="200" style="margin:50px auto; outline:1px dashed #ccc"></canvas>
+<canvas id="stage" width="400" height="400" style="margin:50px auto; outline:1px dashed #ccc"></canvas>
 <script type="text/javascript">
+/**
+TODO
+- Fixing up spirte sheets (use mario_movements.png_
+- click to move
+- world, backgrounds, collidables, other entities, fights, rooms, rpg points, etc...
+- World creator (persistent data)
+- MVP-ify (separate data about entities from views (sprites)
+*/
+
 var Game = (function() {
 	var Game = new Backbone.Marionette.Application();
 	
@@ -67,9 +76,6 @@ var Game = (function() {
 		// Create mario	entity
 		Game.mario = new Mario({ stage: Game.stage });
 		Game.addChild(Game.mario);
-
-		// testing movement
-		//Game.mario.moveTo(00, 500);
 	}
 	
 	Game.addChild = function(entity) {
@@ -108,17 +114,6 @@ var Entity = (function() {
 		upLeft			: [(9/8), (11/8)],
 		left				: [(11/8), (13/8)],
 		downLeft		: [(13/8), (15/8)],
-		
-		/* In degrees
-		"up"				: [338, 22],
-		"upRight"		: [23, 67],
-		"right"			: [68, 112],
-		"downRight"	: [113, 157],
-		"down"			: [158, 202],
-		"downLeft" 	: [203, 247],
-		"left"			: [248, 292],
-		"upLeft"		: [293, 337]
-		*/
 	}
 	
 	var self = Class.extend({
@@ -142,6 +137,9 @@ var Entity = (function() {
 			
 			// Create sprite
 			this.configureSprite();
+			
+			// Put him in his place
+			this.moveTo(this.startingPosition);
 		},
 		
 		// Setup sprite, with movement animations
@@ -207,7 +205,6 @@ var Entity = (function() {
 					break;
 				}
 			}
-				console.log(this.direction, fraction);
 			
 			// Assume that if !direction, is up
 			// Probably a better way, but...
@@ -250,22 +247,22 @@ var Entity = (function() {
 
 var Mario = (function() {
 	var self = Entity.extend({
-		startingPosition: { x:0, y: 0 },
+		startingPosition: { x: 200, y: 200 },
 		
 		movements: [
-			{ direction: "up", 				frames: [6, 14, 6, 16] },
-			{ direction: "upRight", 	frames: [32, 17, 32, 18] },
-			{ direction: "right",			frames: [7, 15, 7, 17] },
-			{ direction: "downRight", frames: [27, 29, 27, 21] },
-			{ direction: "down",			frames: [8, 10, 8, 11] },
-			{ direction: "downLeft", 	frames: [26, 28, 26, 20] },
-			{ direction: "left",			frames: [6, 14, 6, 16] },
-			{ direction: "upLeft", 		frames: [56, 34, 56, 35] }
+			{ direction: "down",			frames: [0, 1, 0, 2] },
+			{ direction: "downRight", frames: [3, 4, 3, 5] },
+			{ direction: "right",			frames: [6, 7, 6, 8] },
+			{ direction: "upRight", 	frames: [9, 10, 9, 11] },
+			{ direction: "up", 				frames: [12, 13, 12, 14] },
+			{ direction: "upLeft", 	frames: [15, 16, 15, 17] },
+			{ direction: "left",			frames: [18, 19, 18, 20] },
+			{ direction: "downLeft", 		frames: [21, 22, 21, 23] },
 		],
 		
 		spriteOptions: {
-			images: [Game.images.mario],
-			frames: { width: 150, height: 150 },
+			images: [Game.images.mario_movements],
+			frames: { width: 100, height: 100, regX: 50, regY: 90 },
 			frequency: 3
 		},
 		
