@@ -10,8 +10,11 @@
 <script type="text/javascript" src="../lib/backbone.js"></script>
 <script type="text/javascript" src="../lib/backbone.marionette.js"></script>
 <script type="text/javascript" src="../lib/simpleInheritance.js"></script>
+<script type="text/javascript" src="lib/EventListener.js"></script>
 
-<script type="text/javascript" src="lib/world.js"></script>
+
+<script type="text/javascript" src="lib/World.js"></script>
+<script type="text/javascript" src="lib/Entity.js"></script>
 </head>
 
 <body>
@@ -73,33 +76,11 @@ var Game = (function() {
 			stage: Game.stage,
 			pattern: Game.images.sand,
 			width:2000, height: 2000,
-			center: { x: 1000, y: 1000}
+			startPosition: { x: 0, y: 0},
+			scrollBounds: 50,
+			scrollVelocity: 20
 		});
 		Game.stage.addChild(Game.world.container);
-		
-			// testing:
-			var g = new createjs.Graphics();
-			g.setStrokeStyle(1);
-			g.beginStroke(createjs.Graphics.getRGB(0,0,0));
-			g.beginFill(createjs.Graphics.getRGB(255,0,0));
-			g.drawCircle(0,0,20);
-			var s = new createjs.Shape(g);
-			var s1 = s.clone(true); var s2 = s.clone(true); var s3 = s.clone(true);
-			s.x = 2000; s.y = 2000;
-			s1.x = 1000, s1.y = 1000;
-			s2.x = 0, s2.y = 0;
-			Game.world.container.addChild(s, s1, s2);
-			var toCenter = function(world, x, y) {
-				var stageCenter = { x: Game.canvas.width/2, y: Game.canvas.height/2}
-				world.container.x = stageCenter.x - x;
-				world.container.y = stageCenter.y - y;
-				
-				// Limit at left and top
-				if(world.container.x > 0) { world.container.x = 0 }
-				if(world.container.y > 0) { world.container.y = 0 }
-				Game.stage.update();
-			}
-			toCenter(Game.world, 0, 2000);
 
 		// setup ticker
 		if(Game.tick) { createjs.Ticker.addListener(Game.tick); }
@@ -113,13 +94,16 @@ var Game = (function() {
 		
 		// Click to move hero
 		$('#stage').on("mousedown", Game.handleMouseDown);
+		Game.world.container.addEventListener("onClick", function(e) {
+			console.log("stageX: ", e.stageX, " worldX: ", e.stageX - Game.world.container.x);
+		});
 	},
 	
 	Game.handleMouseDown = function(e) {
 		// Right click -> move hero
-		if(e.button === 2) {
+		/*if(e.button === 2) {
 			Game.hero.moveTo(e.offsetX, e.offsetY);
-		}
+		}*/
 	},
 	
 	Game.addChild = function(entity) {
@@ -143,154 +127,6 @@ var Game = (function() {
 	return Game;
 })();
 
-var Entity = (function() {
-	// Named direction mapped to radian angle
-	var _degreeMap = {
-		// 0 is "right"
-		// PI is "left"
-		// In fractions of 2 (radians / PI)
-		down				: [(15/8), (1/8)],
-		downRight		: [(1/8), (3/8)],
-		right				: [(3/8), (5/8)],
-		upRight			: [(5/8), (7/8)],
-		up					: [(7/8), (9/8)],
-		upLeft			: [(9/8), (11/8)],
-		left				: [(11/8), (13/8)],
-		downLeft		: [(13/8), (15/8)],
-	}
-	
-	var self = Class.extend({
-		
-		startingPosition: { x: 0, y: 0 },
-		
-		velocity: 1.5,			// pixels per second
-	
-		init: function(options) {
-			_.bindAll(this);
-			
-			this.options = options || {};
-			
-			// Set stage
-			this.stage = options.stage || this.stage;
-			if(!stage) { throw new Error("A stage must be defined on an entity object"); }
-			
-		
-			// Setup ticker
-			if(this.tick) { createjs.Ticker.addListener(this.tick) }
-			
-			// Create sprite
-			this.configureSprite();
-			
-			// Put him in his place
-			this.moveTo(this.startingPosition);
-		},
-		
-		// Setup sprite, with movement animations
-		configureSprite: function() {
-			var animations = {};
-			
-			this.spriteOptions || (this.spriteOptions = this.options.spriteOptions);
-			this.movements || (this.movements = this.options.movements);
-			
-			// Require spriteOptions to be set
-			if(!this.spriteOptions) { throw new Error("spriteOptions must be set for an entity") };
-	
-			// Create animations for each movement
-			for(var i=0; i<this.movements.length; ++i) {
-				var name = this.movements[i].direction;
-				var frames = this.movements[i].frames;
-				var frequency = this.movements[i].frequency || this.spriteOptions.frequency;
-				
-				animations[name] = {
-					frames: frames,
-					next: name,
-					frequency: frequency
-				}
-			}
-
-			// Add movement animations to any other specified animations
-			this.spriteOptions.animations = _.extend({}, this.spriteOptions.animations, animations);
-			this.sprite = new createjs.SpriteSheet(this.spriteOptions);
-			this.animation = new createjs.BitmapAnimation(this.sprite);
-			
-			// Set starting position
-			_.extend(this.animation, this.startingPosition);
-			
-		},
-		
-		moveTo: function(toX, toY) {
-			var dx, dy, radians, slope;
-			var self = this;
-			
-			// Allow params as (x, y) or { x: ..., y: ... }
-			if(_.isObject(toX)) { toX = toX.x, toY = toX.y }
-			
-			// Get fraction of a circle (where 180deg = 1, 360 = 2(0))
-			var fractions = function(r) {
-				r = r/Math.PI
-				
-				// Return fraction of whole circle (instead of using JS's neg. radians
-				if(r < 0) { r = 2 + r	}
-				return r;
-			}
-			
-			// Find radian angle between points 
-			// (where up = 0, down = 1)
-			dx = toX - this.animation.x;
-			dy = toY - this.animation.y;
-			fraction = fractions(Math.atan2(dx,dy));				// Fraction of 2PI radians
-			
-			// Find direction matching radian angle
-			this.direction = null;
-			for(var name in _degreeMap) {
-				if(_degreeMap[name][0] < fraction && fraction <= _degreeMap[name][1]) {
-					this.direction = name;
-					break;
-				}
-			}
-			
-			// Assume that if !direction, is up
-			// Probably a better way, but...
-			if(this.direction === null) { this.direction = "down" }
-				
-			// Set sprite animation
-			this.animation.gotoAndPlay(this.direction);
-			
-			// Animate to location
-			this.getQueue({ override: true }).to({ x: toX, y: toY }, 1000, createjs.Ease.quadInOut).call(this.stop);
-		},
-		
-		getQueue: function(options) {
-			options || (options = {});
-			// Tween queue
-			return this.queue = createjs.Tween.get(this.animation, options);
-		},
-		
-		// Stops the sprite animation, and shows "standing" frame
-		stop: function() {
-			var frames = this.sprite.getAnimation(this.direction).frames;
-			this.animation.gotoAndStop(frames[0]);
-		},
-		
-		tickAction: function() {
-		},
-		
-		setTickAction: function(fn) {
-			this.tickAction = fn;
-		},
-		
-		clearTickAction: function() {
-			this.tickAction = function() {}
-		},
-		
-		tick: function() {
-			this.tickAction.apply(arguments, this);
-			this.stage.update();
-		}
-	});
-
-	return self;
-})();
 
 var Mario = (function() {
 	var self = Entity.extend({

@@ -11,8 +11,9 @@
 <script type="text/javascript" src="../lib/backbone.js"></script>
 <script type="text/javascript" src="../lib/backbone.marionette.js"></script>
 <script type="text/javascript" src="../lib/simpleInheritance.js"></script>
+<script type="text/javascript" src="lib/EventListener.js"></script>
 
-<script type="text/javascript" src="lib/world.js"></script>
+<script type="text/javascript" src="lib/World.js"></script>
 </head>
 
 <body>
@@ -36,7 +37,8 @@ var world = new World({
 	stage: stage,
 	width: 1200,
 	height: 600,
-	pattern: 'textures/sand.png'
+	pattern: 'textures/sand.png',
+	scrollBounds: 10
 });
 stage.addChild(world.container);
 </script>
