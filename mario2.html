@@ -32,7 +32,8 @@ var Game = (function() {
 	Game.images = {
 		mario_movements: "sprites/mario_movements.png",
 		mario: "sprites/supermariorpg_mario_sheet.png",
-		yoshi: "sprites/supermariorpg_yoshis_sheet.png"
+		yoshi: "sprites/supermariorpg_yoshis_sheet.png",
+		sand: "textures/sand.png"
 	};
 	
 	Game.entities = {};
@@ -66,6 +67,8 @@ var Game = (function() {
 		// Setup stage
 		Game.canvas = document.getElementById("stage");
 		Game.stage = new createjs.Stage(Game.canvas);
+		Game.world = new createjs.Container()
+		Game.stage.addChild(Game.world);
 
 		// setup ticker
 		if(Game.tick) { createjs.Ticker.addListener(Game.tick); }
@@ -73,11 +76,18 @@ var Game = (function() {
 		createjs.setFPS = 60;
 		
 		// Create mario	entity
-		Game.hero = new Mario({ stage: Game.stage });
+		Game.hero = new Mario({ stage: Game.stage, world: Game.world });
 		Game.addChild(Game.hero);
 		
 		// Click to move hero
 		$('#stage').on("mousedown", Game.handleMouseDown);
+		
+		// Create world (IN PROGRESS)
+		var world = new World({
+			pattern: Game.images.sand
+		});
+		Game.stage.addChild(world.container);
+		Game.stage.update();
 	},
 	
 	Game.handleMouseDown = function(e) {
@@ -89,8 +99,7 @@ var Game = (function() {
 	
 	Game.addChild = function(entity) {
 		if(!entity.animation) { throw new Error("Cannot add entity to stage: Entity is missing animation property"); }
-		Game.stage.addChild(entity.animation);
-		entity.animation.gotoAndPlay("right");
+		Game.world.addChild(entity.animation);
 		Game.stage.update();
 	}
 	
@@ -281,6 +290,63 @@ var Mario = (function() {
 		
 		tick: function() {
 			this._super();
+		}
+	});
+	
+	return self;
+})();
+
+var World = (function() {
+	var self = Class.extend({
+		init: function(options) {
+			_.bindAll(this);
+			
+			options || (options = {});
+			_.extend(this, {
+				width: 1200,
+				height: 1200,
+				center: { x: 400, y: 300 }
+			}, options);
+			
+			this.container = new createjs.Container();
+			
+			this.configure();
+		},
+		
+		// Create the world shape, and set pattern texture
+		configure: function() {
+			var graphic = new createjs.Graphics();
+			var shape = new createjs.Shape();
+			
+			
+			// Ensure loaded pattern
+			// Kind of clunky... but hey.
+			if(this.pattern instanceof Image && !this.pattern.complete) {		// Not-loaded image
+				var oldOnload = this.pattern.onload || function() {};
+				this.pattern.onload = function() {
+					oldOnload();
+					self.configure.apply(self);
+				}
+				return;
+			}
+			else if(_.isString(this.pattern)) {
+				var src = this.pattern;
+				this.pattern = new Image();
+				this.pattern.src = src;
+				this.pattern.onload = this.configure;
+				return;
+			}
+			
+			// Create graphic
+			if(this.pattern) { graphic.beginBitmapFill(this.pattern); }
+			graphic.rect(0, 0, this.width, this.height);
+			
+			// Create shape (to hold graphic)
+			shape.x = this.center.x * -1;
+			shape.y = this.center.y * -1
+			shape.graphics = graphic;
+			
+			this.container.addChild(shape);
 		}
 	});
 	
