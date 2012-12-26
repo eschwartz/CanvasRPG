@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>RPG World</title>
+
+<script type="text/javascript" src="../lib/easeljs.min.js"></script>
+<script type="text/javascript" src="../lib/tweenjs.min.js"></script>
+<script type="text/javascript" src="../lib/jquery.js"></script>
+<script type="text/javascript" src="../lib/underscore.js"></script>
+<script type="text/javascript" src="../lib/backbone.js"></script>
+<script type="text/javascript" src="../lib/backbone.marionette.js"></script>
+<script type="text/javascript" src="../lib/simpleInheritance.js"></script>
+
+<script type="text/javascript" src="lib/world.js"></script>
+</head>
+
+<body>
+
+<canvas id="stage" width="800" height="400" style="display: block; margin:50px auto; outline:1px dashed #ccc" oncontextmenu="return false"></canvas>
+
+<script type="text/javascript">
+var canvas = document.getElementById("stage");
+var stage = new createjs.Stage(canvas);
+var tick = function() {
+	stage.update();
+}
+
+
+createjs.Ticker.addListener(tick);
+createjs.useRAF = true;
+createjs.setFPS = 60;
+
+
+var world = new World({
+	stage: stage,
+	width: 1200,
+	height: 600,
+	pattern: 'textures/sand.png'
+});
+stage.addChild(world.container);
+</script>
+</body>
+</html>

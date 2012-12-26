@@ -10,6 +10,8 @@
 <script type="text/javascript" src="../lib/backbone.js"></script>
 <script type="text/javascript" src="../lib/backbone.marionette.js"></script>
 <script type="text/javascript" src="../lib/simpleInheritance.js"></script>
+
+<script type="text/javascript" src="lib/world.js"></script>
 </head>
 
 <body>
@@ -67,8 +69,37 @@ var Game = (function() {
 		// Setup stage
 		Game.canvas = document.getElementById("stage");
 		Game.stage = new createjs.Stage(Game.canvas);
-		Game.world = new createjs.Container()
-		Game.stage.addChild(Game.world);
+		Game.world = new World({
+			stage: Game.stage,
+			pattern: Game.images.sand,
+			width:2000, height: 2000,
+			center: { x: 1000, y: 1000}
+		});
+		Game.stage.addChild(Game.world.container);
+		
+			// testing:
+			var g = new createjs.Graphics();
+			g.setStrokeStyle(1);
+			g.beginStroke(createjs.Graphics.getRGB(0,0,0));
+			g.beginFill(createjs.Graphics.getRGB(255,0,0));
+			g.drawCircle(0,0,20);
+			var s = new createjs.Shape(g);
+			var s1 = s.clone(true); var s2 = s.clone(true); var s3 = s.clone(true);
+			s.x = 2000; s.y = 2000;
+			s1.x = 1000, s1.y = 1000;
+			s2.x = 0, s2.y = 0;
+			Game.world.container.addChild(s, s1, s2);
+			var toCenter = function(world, x, y) {
+				var stageCenter = { x: Game.canvas.width/2, y: Game.canvas.height/2}
+				world.container.x = stageCenter.x - x;
+				world.container.y = stageCenter.y - y;
+				
+				// Limit at left and top
+				if(world.container.x > 0) { world.container.x = 0 }
+				if(world.container.y > 0) { world.container.y = 0 }
+				Game.stage.update();
+			}
+			toCenter(Game.world, 0, 2000);
 
 		// setup ticker
 		if(Game.tick) { createjs.Ticker.addListener(Game.tick); }
@@ -77,17 +108,11 @@ var Game = (function() {
 		
 		// Create mario	entity
 		Game.hero = new Mario({ stage: Game.stage, world: Game.world });
-		Game.addChild(Game.hero);
+		Game.world.addChild(Game.hero);
+		Game.stage.update();
 		
 		// Click to move hero
 		$('#stage').on("mousedown", Game.handleMouseDown);
-		
-		// Create world (IN PROGRESS)
-		var world = new World({
-			pattern: Game.images.sand
-		});
-		Game.stage.addChild(world.container);
-		Game.stage.update();
 	},
 	
 	Game.handleMouseDown = function(e) {
@@ -296,62 +321,6 @@ var Mario = (function() {
 	return self;
 })();
 
-var World = (function() {
-	var self = Class.extend({
-		init: function(options) {
-			_.bindAll(this);
-			
-			options || (options = {});
-			_.extend(this, {
-				width: 1200,
-				height: 1200,
-				center: { x: 400, y: 300 }
-			}, options);
-			
-			this.container = new createjs.Container();
-			
-			this.configure();
-		},
-		
-		// Create the world shape, and set pattern texture
-		configure: function() {
-			var graphic = new createjs.Graphics();
-			var shape = new createjs.Shape();
-			
-			
-			// Ensure loaded pattern
-			// Kind of clunky... but hey.
-			if(this.pattern instanceof Image && !this.pattern.complete) {		// Not-loaded image
-				var oldOnload = this.pattern.onload || function() {};
-				this.pattern.onload = function() {
-					oldOnload();
-					self.configure.apply(self);
-				}
-				return;
-			}
-			else if(_.isString(this.pattern)) {
-				var src = this.pattern;
-				this.pattern = new Image();
-				this.pattern.src = src;
-				this.pattern.onload = this.configure;
-				return;
-			}
-			
-			// Create graphic
-			if(this.pattern) { graphic.beginBitmapFill(this.pattern); }
-			graphic.rect(0, 0, this.width, this.height);
-			
-			// Create shape (to hold graphic)
-			shape.x = this.center.x * -1;
-			shape.y = this.center.y * -1
-			shape.graphics = graphic;
-			
-			this.container.addChild(shape);
-		}
-	});
-	
-	return self;
-})();
 </script>
 <script type="text/javascript">
 $(document).ready(function() {
