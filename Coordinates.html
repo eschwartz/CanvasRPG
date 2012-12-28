@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Coordinates class</title>
+<script type="text/javascript" src="../lib/underscore.js"></script>
+<script type="text/javascript" src="../lib/simpleInheritance.js"></script>
+<script type="text/javascript" src="lib/Coordinates.js"></script>
+</head>
+
+<body>
+<canvas width="1000" height="1000" id="canvas" style="margin:20px auto; display:block; outline:3px dashed red;"></canvas>
+<script type="text/javascript">
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
+var coord = new Coordinates(500, 500);
+
+var testCoords = {
+	coord: { x: 500, y: 500},
+	a: { x: 10, y: 10},
+	b: { x: 250, y: 10},
+	c: { x: 500, y: 10},
+	d: { x: 750, y: 10},
+	e: { x: 970, y: 10},
+	f: { x: 970, y: 250},
+	g: { x: 970, y: 500},
+	h: { x: 970, y: 750},
+	i: { x: 970, y: 970},
+	k: { x: 750, y: 970},
+	l: { x: 500, y: 970},
+	m: { x: 250, y: 970},
+	n: { x: 10, y: 970},
+	o: { x: 10, y: 750},
+	p: { x: 10, y: 500},
+	q: { x: 10, y: 250},
+	
+}
+
+console.log("coord", coord);
+for(name in testCoords) {
+	ctx.font = "bold 20px sans-serif";
+	ctx.fillText(name, testCoords[name].x+15, testCoords[name].y+15);
+	
+	console.log({ 
+		name: name,
+		coords: testCoords[name].x + ", " + testCoords[name].y,
+		direction: coord.directionTo(testCoords[name]),
+		distanceTo: coord.distanceTo(testCoords[name]),
+		radiansTo: coord.radiansTo(testCoords[name]),
+		fractionTo: coord.fractionTo(testCoords[name])
+	});
+}
+
+canvas.onclick = function(e){
+	var c = new Coordinates(e);
+	console.log({
+		coords: c.x + ", " + c.y,
+		direction: coord.directionTo(c),
+		distance: coord.distanceTo(c)
+	});
+}
+
+</script>
+</body>
+</html>
