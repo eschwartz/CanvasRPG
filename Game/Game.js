@@ -68,7 +68,7 @@ var Game = (function() {
 			scrollBounds: 50,
 			scrollVelocity: 20
 		});
-		Game.stage.addChild(Game.world.container);
+		Game.stage.addChild(Game.world.displayObject);
 
 		// setup ticker
 		if(Game.tick) { createjs.Ticker.addListener(Game.tick); }
@@ -78,19 +78,10 @@ var Game = (function() {
 		// Create mario	entity
 		Game.hero = new Game.Mario({ stage: Game.stage, world: Game.world });
 		Game.world.addChild(Game.hero);
-		//Game.stage.addChild(Game.hero.displayObject);
 		Game.stage.update();
-			console.log(Game.hero, Game.world.container, Game.stage);
 		
 		// Click to move hero
 		$('#stage').on("mousedown", Game.handleMouseDown);
-	},
-	
-	Game.handleMouseDown = function(e) {
-		// Right click -> move hero
-		/*if(e.button === 2) {
-			Game.hero.moveTo(e.offsetX, e.offsetY);
-		}*/
 	},
 	
 	Game.addChild = function(entity) {
