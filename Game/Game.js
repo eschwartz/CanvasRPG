@@ -8,6 +8,11 @@ TODO
 - other entities,
 	-- Have an non-user object
  		-- Random movement within an area
+-- How do we prevent overlapping spawns?
+- Full screen game
+- Keyboard <-> event map
+	-- create config object, mapping keycodes to class methods (eg. { [c]: centerMap }
+	-- also, could include mouse events (?)
 - World creator (persistent data)
 - fights, rpg points, etc...
 - MVP-ify (separate data about entities from views (sprites)
@@ -26,7 +31,8 @@ var Game = (function() {
 		mario_movements: "sprites/mario_movements.png",
 		mario: "sprites/supermariorpg_mario_sheet.png",
 		yoshi: "sprites/supermariorpg_yoshis_sheet.png",
-		sand: "textures/sand.png"
+		sand: "textures/sand.png",
+		passiveObjects: "sprites/passiveObjects.png"
 	};
 	
 	Game.entities = {};
@@ -77,11 +83,14 @@ var Game = (function() {
 		
 		// Create mario	entity
 		Game.hero = new Game.Mario({ stage: Game.stage, world: Game.world });
-		Game.world.addChild(Game.hero);
+		Game.world.addEntity(Game.hero);
 		Game.stage.update();
 		
 		// Click to move hero
 		$('#stage').on("mousedown", Game.handleMouseDown);
+		
+		// Let everyone know we're ready to roll
+		Game.vent.trigger("game:initialized");
 	},
 	
 	Game.addChild = function(entity) {
