@@ -21,18 +21,21 @@ Game.Hill = createjs.Entity.extend({
 		spriteOptions: {
 			images: [Game.images.passiveObjects],
 			frames: [
-				[0, 0, 119, 87, 0, 0, 0] 
+				[0, 0, 119, 87, 0, 30, 65] 
 			]
-		}
+		},
+		hitRadius: 30
 });
 
 Game.Bouquet = createjs.Entity.extend({
 		spriteOptions: {
 			images: [Game.images.passiveObjects],
 			frames: [
-				[250, 0, 62, 62, 0, 0, 0] 
+				[250, 0, 62, 62, 0, 30, 50] 
 			]
-		}
+		},
+
+		hitRadius: 30
 });
 
 
@@ -54,9 +57,11 @@ Game.vent.on("game:initialized", function() {
 		}
 	}
 
-	//randomSpawn(Game.Pipe, 10);
-	//randomSpawn(Game.Hill, 5);
-	//randomSpawn(Game.Bouquet, 15);
+	
+	randomSpawn(Game.Pipe, 10);
+	randomSpawn(Game.Hill, 5);
+	randomSpawn(Game.Bouquet, 15);
+	/*
 	window.pipe = new Game.Pipe({
 		spawnPoint: {
 			x: 300,
@@ -68,5 +73,6 @@ Game.vent.on("game:initialized", function() {
 	Game.world.addEntity(window.pipe);
 	window.mario = Game.hero;
 	window.collidables = window.mario.getCollidables();
+	*/
 });
 
