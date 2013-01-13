@@ -15,18 +15,11 @@ Game.Mario = (function() {
 		
 		spriteOptions: {
 			images: [Game.images.mario_movements],
-			frames: { width: 100, height: 100, regX: 25, regY: 10 },
+			frames: { width: 100, height: 100, regX: 50, regY: 85 },
 			frequency: 3
 		},
 
-		// Position relative to reg point
-		// Used for collision detection
-		// eg: Mario's feet.
-		collisionArea: {
-			x: 0, y: 75,
-			width: 45,
-			height: 25
-		},
+		hitRadius:15
 	});
 	
 	return ThisClass;

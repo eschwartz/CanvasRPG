@@ -11,14 +11,10 @@ Game.Pipe = createjs.Entity.extend({
 		spriteOptions: {
 			images: [Game.images.passiveObjects],
 			frames: [
-				[55, 92, 58, 58, 0, 0, 0] 
+				[55, 92, 58, 58, 0, 25, 50] 
 			]
 		},
-		collisionArea: {
-			x: 0, y: 48,
-			width: 58,
-			height: 10
-		}
+		hitRadius: 20
 });
 
 Game.Hill = createjs.Entity.extend({
