@@ -16,6 +16,21 @@ TODO
 - World creator (persistent data)
 - fights, rpg points, etc...
 - MVP-ify (separate data about entities from views (sprites)
+
+*
+* Idea:
+	To cut down on garbage collection performance issues
+	create "newObject" method
+	which caches a bunch of objects/arrays/whatever
+	and returns an empty one to use
+	Would manually handle garbage collection.
+
+	var collidables = newObject(array);
+	for..{ 
+		collidables.push(entity); 
+	}
+	if(collidables.length) { // do something }
+	collidables.garbageCollect();					// Marks object as available to empty/reuse
 */
 
 
@@ -78,8 +93,8 @@ var Game = (function() {
 
 		// setup ticker
 		if(Game.tick) { createjs.Ticker.addListener(Game.tick); }
-		createjs.useRAF = true;
-		createjs.setFPS = 60;
+		createjs.Ticker.useRAF = true;
+		createjs.Ticker.setFPS = 60;
 		
 		// Create mario	entity
 		Game.hero = new Game.Mario({ stage: Game.stage, world: Game.world });
