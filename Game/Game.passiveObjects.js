@@ -14,7 +14,7 @@ Game.Pipe = createjs.Entity.extend({
 				[55, 92, 58, 58, 0, 25, 50] 
 			]
 		},
-		hitRadius: 20
+		hitRadius: 10
 });
 
 Game.Hill = createjs.Entity.extend({
@@ -24,7 +24,7 @@ Game.Hill = createjs.Entity.extend({
 				[0, 0, 119, 87, 0, 30, 65] 
 			]
 		},
-		hitRadius: 30
+		hitRadius: 40
 });
 
 Game.Bouquet = createjs.Entity.extend({
@@ -48,7 +48,7 @@ Game.vent.on("game:initialized", function() {
 	var randomSpawn = function(Obj, count) {
 		for(var i = 0; i < count; ++i) {
 			var options = {
-				spawnPoint: { x: randomFromInterval(0, Game.world.width), y: randomFromInterval(0, Game.world.height)},
+				spawnPoint: createjs.Utility.randomCoord(Game.world),
 				stage: Game.stage,
 				world: Game.world
 			}
@@ -58,9 +58,9 @@ Game.vent.on("game:initialized", function() {
 	}
 
 	
-	randomSpawn(Game.Pipe, 10);
-	randomSpawn(Game.Hill, 5);
-	randomSpawn(Game.Bouquet, 15);
+	createjs.Utility.randomSpawn(Game.Pipe, Game.world, 10);
+	createjs.Utility.randomSpawn(Game.Hill, Game.world, 5);
+	createjs.Utility.randomSpawn(Game.Bouquet, Game.world, 15);
 	/*
 	window.pipe = new Game.Pipe({
 		spawnPoint: {
