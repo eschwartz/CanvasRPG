@@ -3,130 +3,33 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>EaselJS - Mario</title>
-<script type="text/javascript" src="lib/easeljs.min.js"></script>
+<script type="text/javascript" src="../lib/easeljs.min.js"></script>
+<script type="text/javascript" src="../lib/tweenjs.min.js"></script>
 <script type="text/javascript" src="../lib/jquery.js"></script>
-<!--<script type="text/javascript" src="../lib/backbone.js"></script>
-<script type="text/javascript" src="../lib/backbone.marionette.js"></script>-->
+<script type="text/javascript" src="../lib/underscore.js"></script>
+<script type="text/javascript" src="../lib/backbone.js"></script>
+<script type="text/javascript" src="../lib/backbone.marionette.js"></script>
+<script type="text/javascript" src="../lib/simpleInheritance.js"></script>
+<script type="text/javascript" src="lib/EventListener.js"></script>
+<script type="text/javascript" src="lib/Coordinates.js"></script>
+<script type="text/javascript" src="lib/ndgmr.Collision.js"></script>
+
+<script type="text/javascript" src="lib/createjs.World.js"></script>
+<script type="text/javascript" src="lib/createjs.Entity.js"></script>
+<script type="text/javascript" src="lib/createjs.Hero.js"></script>
+<script type="text/javascript" src="lib/createjs.Utility.js"></script>
+
+<script type="text/javascript" src="Game/Game.js"></script>
+<script type="text/javascript" src="Game/Game.Mario.js"></script>
+<script type="text/javascript" src="Game/Game.passiveObjects.js"></script>
 </head>
 
-<body>,
-<h1>Mario with EaselJS</h1>
-<small><a href="http://blogs.msdn.com/b/davrous/archive/2011/07/21/html5-gaming-animating-sprites-in-canvas-with-easeljs.aspx" target="_blank">Tutorial</a></small>
-<small><i><a href="http://www.createjs.com/Docs/EaselJS/module_EaselJS.html" target="_blank">docs</a></i></small>
-<canvas id="stage" width="400" height="200" style="margin:50px auto; outline:1px dashed #ccc"></canvas>
-
+<body>
+<h5 id="fps"></h5>
+<canvas id="stage" width="800" height="600" style="display: block; margin:50px auto; outline:1px dashed #ccc" oncontextmenu="return false"></canvas>
 <script type="text/javascript">
-var App = {};
-
-App.images = {
-	mario: "sprites/supermariorpg_mario_sheet.png",
-	yoshi: "sprites/supermariorpg_yoshis_sheet.png"
-}
-
-App.loadImages = function(images, callback) {
-	var loaded = 0;
-	var countLoads;
-	
-	callback || (callback = function() {});
-	
-	countLoads = function() {
-		loaded++;
-		if(loaded = images.length) {
-			$.trigger("images:loaded", images);
-			callback();
-		}
-	}
-	
-	// overwrite image src's with Image objects
-	for(name in images) {
-		var src = images[name];
-		images[name] = new Image();
-		images[name].src = src;
-		images[name].onerror = function() { throw new Error("Unable to load image (src: " + src + ")"); };
-		images[name].onload = countLoads;
-	}
-}
-
-
-App.animateImg = function(img) {
-	var sprite = new createjs.SpriteSheet({
-		images: [img],
-		frames: {
-			width: 150,
-			height:150,
-			regX: 0,
-			regY: 0,
-		},
-		animations: {
-			walk_l: {
-				frames: [6, 14, 6, 16],
-				next: "walk_l",
-				frequency: 2
-			},
-			walk_r: {
-				frames: [7, 15, 7, 17],
-				next: "walk_r",
-				frequency: 2
-			}
-		}
-	});
-	
-	var animation = new createjs.BitmapAnimation(sprite);
-	
-	animation.gotoAndPlay("walk_l");
-	animation.name = "mario";
-	animation.direction = 90;
-	animation.vX = -8;
-	animation.x = 0;
-	animation.y = 32;
-	animation.currentFrame = 0;
-	
-	return animation;
-}
-
-App.init = function() {
-	// Setup stage
-	App.canvas = document.getElementById("stage");
-	App.stage = new createjs.Stage(App.canvas);
-	
-	App.loadImages(App.images);
-	
-	
-	App.marioImage = App.loadImage("sprites/supermariorpg_mario_sheet.png", function(img) {
-		App.animation = App.animateImg(img);
-		
-		App.stage.addChild(App.animation);
-		
-		createjs.Ticker.addListener(window);
-		createjs.useRAF = true;
-		createjs.setFPS = 60;
-	});
-}
-
-function tick() {
-	var anim = App.animation;
-	var v;
-	
-	// Hit right side -> turn left
-	if(anim.x >= App.canvas.width - 50) {
-			anim.direction = -90;
-			anim.gotoAndPlay("walk_l");
-	}
-	// Hit left side -> turn right
-	else if(anim.x == 0) {
-		anim.direction = 90;
-		anim.gotoAndPlay("walk_r");
-	}
-	
-	anim.vX = (anim.direction > 0)? Math.abs(anim.vX): -1 * Math.abs(anim.vX);
-	
-	anim.x += anim.vX;
-	
-	App.stage.update();
-}
-
 $(document).ready(function() {
-	App.init();
+	Game.start();
 });
 </script>
 </body>
