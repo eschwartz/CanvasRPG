@@ -11,7 +11,7 @@ Game.Pipe = createjs.Entity.extend({
 		spriteOptions: {
 			images: [Game.images.passiveObjects],
 			frames: [
-				[55, 92, 58, 58, 0, 25, 50] 
+				[55, 92, 58, 58, 0, 25, 50]
 			]
 		},
 		hitRadius: 10
@@ -21,7 +21,7 @@ Game.Hill = createjs.Entity.extend({
 		spriteOptions: {
 			images: [Game.images.passiveObjects],
 			frames: [
-				[0, 0, 119, 87, 0, 30, 65] 
+				[0, 0, 119, 87, 0, 30, 65]
 			]
 		},
 		hitRadius: 40
@@ -31,7 +31,7 @@ Game.Bouquet = createjs.Entity.extend({
 		spriteOptions: {
 			images: [Game.images.passiveObjects],
 			frames: [
-				[250, 0, 62, 62, 0, 30, 50] 
+				[250, 0, 62, 62, 0, 30, 50]
 			]
 		},
 
@@ -57,7 +57,7 @@ Game.vent.on("game:initialized", function() {
 		}
 	}
 
-	
+
 	createjs.Utility.randomSpawn(Game.Pipe, Game.world, 10);
 	createjs.Utility.randomSpawn(Game.Hill, Game.world, 5);
 	createjs.Utility.randomSpawn(Game.Bouquet, Game.world, 15);

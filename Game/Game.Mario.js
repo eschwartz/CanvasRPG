@@ -1,7 +1,6 @@
 Game.Mario = (function() {
 	var ThisClass = createjs.Hero.extend({
 		spawnPoint: { x: 200, y: 200 },
-		
 		movements: [
 			{ direction: "down",			frames: [0, 1, 0, 2] },
 			{ direction: "downRight", frames: [3, 4, 3, 5] },
@@ -12,7 +11,7 @@ Game.Mario = (function() {
 			{ direction: "left",			frames: [18, 19, 18, 20] },
 			{ direction: "downLeft", 		frames: [21, 22, 21, 23] },
 		],
-		
+
 		spriteOptions: {
 			images: [Game.images.mario_movements],
 			frames: { width: 100, height: 100, regX: 50, regY: 85 },
@@ -21,6 +20,6 @@ Game.Mario = (function() {
 
 		hitRadius:15
 	});
-	
+
 	return ThisClass;
 })();
