@@ -110,7 +110,13 @@ var Game = (function() {
 
 	Game.loadAssets = function() {
 		Game.loadImages(Game.images);
-	}
+	},
+
+	Game.tick = function() {
+		$('#fps').text(createjs.Ticker.getMeasuredFPS().toFixed(0));
+
+		Game.stage.update();
+	},
 
 	// Start the game when assets are load
 	Game.addInitializer(function() {

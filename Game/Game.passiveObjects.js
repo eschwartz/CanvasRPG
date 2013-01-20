@@ -1,78 +1,62 @@
 /**
  * Game.passiveObjects.js
- * A bunch of things to put on the world map (non-agent)
- *
- * To do:
- 		- Bind to some kind of persistant map data
-		- Handle collisions on spawn
+ * A bunch of things to put on the world map
 */
+Game.vent.on("game:initialized", function() {
 
-Game.Pipe = createjs.Entity.extend({
+	Game.Pipe = createjs.PassiveObject.extend({
 		spriteOptions: {
-			images: [Game.images.passiveObjects],
-			frames: [
-				[55, 92, 58, 58, 0, 25, 50]
-			]
-		},
-		hitRadius: 10
-});
-
-Game.Hill = createjs.Entity.extend({
-		spriteOptions: {
-			images: [Game.images.passiveObjects],
-			frames: [
-				[0, 0, 119, 87, 0, 30, 65]
-			]
-		},
-		hitRadius: 40
-});
-
-Game.Bouquet = createjs.Entity.extend({
-		spriteOptions: {
-			images: [Game.images.passiveObjects],
-			frames: [
-				[250, 0, 62, 62, 0, 30, 50]
-			]
+			image: Game.images.passiveObjects,
+			x: 55,
+			y: 92,
+			width: 58,
+			height: 58,
+			regX: 25,
+			regY: 50
 		},
 
 		hitRadius: 30
-});
+	});
 
+	Game.Hill = createjs.PassiveObject.extend({
+		spriteOptions: {
+			image: Game.images.passiveObjects,
+			x: 0,
+			y: 0,
+			width: 119,
+			height: 87,
+			regX: 30,
+			regY: 65
+		},
+		hitRadius: 40
+	});
 
-function randomFromInterval(from,to)
-{
-    return Math.floor(Math.random()*(to-from+1)+from);
-}
-
-Game.vent.on("game:initialized", function() {
-	var randomSpawn = function(Obj, count) {
-		for(var i = 0; i < count; ++i) {
-			var options = {
-				spawnPoint: createjs.Utility.randomCoord(Game.world),
-				stage: Game.stage,
-				world: Game.world
-			}
-			var obj = new Obj(options);
-			Game.world.addEntity(obj);
-		}
-	}
-
+	Game.Bouquet = createjs.PassiveObject.extend({
+		spriteOptions: {
+			image: Game.images.passiveObjects,
+			x: 250,
+			y: 0,
+			width: 62,
+			height: 62,
+			regX: 30,
+			regY: 50
+		},
+		hitRadius: 30
+	})
 
 	createjs.Utility.randomSpawn(Game.Pipe, Game.world, 10);
 	createjs.Utility.randomSpawn(Game.Hill, Game.world, 5);
-	createjs.Utility.randomSpawn(Game.Bouquet, Game.world, 15);
-	/*
-	window.pipe = new Game.Pipe({
+	createjs.Utility.randomSpawn(Game.Bouquet, Game.world, 10);
+
+	/*window.pipe = new Game.Pipe({
 		spawnPoint: {
 			x: 300,
-			y: 300
+			y: 300,
 		},
-		stage: Game.stage,
 		world: Game.world
 	});
 	Game.world.addEntity(window.pipe);
 	window.mario = Game.hero;
-	window.collidables = window.mario.getCollidables();
-	*/
+	window.collidables = window.mario.getCollidables();*/
 });
 
