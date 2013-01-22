@@ -15,6 +15,6 @@ High on my to-do list are:
   * ~~Passive objects (pipes, flowers, hills)~~
   * ~~Active Objects~~
     * ~~Hero (user controlled)~~
-    * AI (computer controlled)
+    * ~~AI (computer controlled)~~
 
-Of course, the fun part will be creating the AI entities, and making some sort of fighting interaction. But all in good time...
+Of course, the fun part will be ~~creating the AI entities,~~ and making some sort of fighting interaction. But all in good time...
